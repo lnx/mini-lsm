@@ -19,8 +19,8 @@ pub const SIZEOF_U16: usize = std::mem::size_of::<u16>();
 /// | Entry #1 | Entry #2 | ... | Entry #N | Offset #1 | Offset #2 | ... | Offset #N | num_of_elements |
 /// ----------------------------------------------------------------------------------------------------
 pub struct Block {
-    data: Vec<u8>,
-    offsets: Vec<u16>,
+    pub data: Vec<u8>,
+    pub offsets: Vec<u16>,
 }
 
 impl Block {
@@ -45,6 +45,10 @@ impl Block {
             .collect();
         let data = data[..data_end].to_vec();
         Self { data, offsets }
+    }
+
+    pub fn size(&self) -> usize {
+        self.data.len() + self.offsets.len() * SIZEOF_U16 + SIZEOF_U16
     }
 }
 

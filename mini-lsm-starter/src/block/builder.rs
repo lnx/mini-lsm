@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use bytes::BufMut;
+use bytes::{BufMut, Bytes};
 
 use super::{Block, SIZEOF_U16};
 
@@ -54,5 +54,9 @@ impl BlockBuilder {
             data.extend(v);
         }
         Block { offsets, data }
+    }
+
+    pub fn first_key(&self) -> Option<Bytes> {
+        self.map.first_key_value().map(|(k, _)| k.clone().into())
     }
 }
