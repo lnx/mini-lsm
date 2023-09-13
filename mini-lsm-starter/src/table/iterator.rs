@@ -91,9 +91,11 @@ impl StorageIterator for SsTableIterator {
         if self.block_iterator.is_valid() {
             Ok(())
         } else {
-            self.block_idx += 1;
-            let block = self.table.read_block(self.block_idx)?;
-            self.block_iterator = BlockIterator::create_and_seek_to_first(block);
+            if self.block_idx + 1 < self.table.block_metas.len() {
+                self.block_idx += 1;
+                let block = self.table.read_block(self.block_idx)?;
+                self.block_iterator = BlockIterator::create_and_seek_to_first(block);
+            }
             Ok(())
         }
     }
