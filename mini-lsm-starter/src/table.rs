@@ -4,7 +4,7 @@ use std::io::{Read, Write};
 use std::path::Path;
 use std::sync::Arc;
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Ok, Result};
 use bytes::{Buf, BufMut, Bytes};
 
 pub use builder::SsTableBuilder;
@@ -90,6 +90,8 @@ pub struct SsTable {
     block_metas: Vec<BlockMeta>,
     /// The offset that indicates the start point of meta blocks in `file`.
     block_meta_offset: usize,
+    id: usize,
+    block_cache: Option<Arc<BlockCache>>,
 }
 
 impl SsTable {
@@ -110,6 +112,8 @@ impl SsTable {
             file,
             block_metas,
             block_meta_offset,
+            id,
+            block_cache,
         })
     }
 
@@ -132,7 +136,14 @@ impl SsTable {
 
     /// Read a block from disk, with block cache. (Day 4)
     pub fn read_block_cached(&self, block_idx: usize) -> Result<Arc<Block>> {
-        unimplemented!()
+        if let Some(ref block_cache) = self.block_cache {
+            let blk = block_cache
+                .try_get_with((self.id, block_idx), || self.read_block(block_idx))
+                .map_err(|e| anyhow!("{}", e))?;
+            Ok(blk)
+        } else {
+            self.read_block(block_idx)
+        }
     }
 
     /// Find the block that may contain `key`.
